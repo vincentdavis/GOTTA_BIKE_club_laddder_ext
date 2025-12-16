@@ -172,10 +172,50 @@ function extractRiders() {
   return riders;
 }
 
+/**
+ * Extract fixtures data from the fixtures page
+ */
+function extractFixtures() {
+  const fixtureRows = document.querySelectorAll('tr.opener[data-id]');
+
+  if (fixtureRows.length === 0) {
+    return {
+      error: true,
+      message: 'No fixtures found on this page.'
+    };
+  }
+
+  const fixtures = [];
+
+  fixtureRows.forEach(row => {
+    const fixtureId = row.getAttribute('data-id');
+    const timeCell = row.querySelector('td:first-child');
+    const homeTeamEl = row.querySelector('.homeTeam .teamOpener');
+    const awayTeamEl = row.querySelector('.awayTeam .teamOpener');
+
+    if (fixtureId && homeTeamEl && awayTeamEl) {
+      fixtures.push({
+        id: fixtureId,
+        time: timeCell ? timeCell.textContent.trim() : '',
+        homeTeam: homeTeamEl.textContent.trim(),
+        awayTeam: awayTeamEl.textContent.trim()
+      });
+    }
+  });
+
+  return {
+    error: false,
+    fixtures: fixtures
+  };
+}
+
 // Listen for messages from popup
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   if (request.action === 'extractData') {
     const data = extractTeamData();
+    sendResponse(data);
+  } else if (request.action === 'extractFixtures') {
+    const data = extractFixtures();
     sendResponse(data);
   }
   return true;

@@ -16,6 +16,8 @@ const downloadCsvBtn = document.getElementById('download-csv-btn');
 const messageEl = document.getElementById('message');
 const navFixturesBtn = document.getElementById('nav-fixtures');
 const settingsBtn = document.getElementById('settings-btn');
+const fixturesPreviewEl = document.getElementById('fixtures-preview');
+const fixturesListEl = document.getElementById('fixtures-list');
 
 // Navigation URLs
 const NAV_URLS = {
@@ -29,6 +31,90 @@ async function navigateTo(url) {
   window.close(); // Close the popup after navigation
 }
 
+// Load saved team name from settings
+async function getSavedTeamName() {
+  try {
+    const result = await chrome.storage.sync.get(['teamName']);
+    return result.teamName || '';
+  } catch (error) {
+    console.error('Error loading team name:', error);
+    return '';
+  }
+}
+
+// Filter fixtures that match the team name (case-insensitive, partial match)
+function filterFixtures(fixtures, teamName) {
+  if (!teamName) return [];
+
+  const searchTerm = teamName.toLowerCase();
+  return fixtures.filter(fixture =>
+    fixture.homeTeam.toLowerCase().includes(searchTerm) ||
+    fixture.awayTeam.toLowerCase().includes(searchTerm)
+  );
+}
+
+// Render fixtures list
+function renderFixtures(fixtures) {
+  if (fixtures.length === 0) {
+    fixturesListEl.innerHTML = '<p class="no-fixtures">No matching fixtures found.</p>';
+    return;
+  }
+
+  let html = '';
+  fixtures.forEach(fixture => {
+    html += `
+      <div class="fixture-item" data-fixture-id="${fixture.id}">
+        <span class="fixture-time">${fixture.time}</span>
+        <span class="fixture-match">${fixture.homeTeam} v ${fixture.awayTeam}</span>
+      </div>
+    `;
+  });
+
+  fixturesListEl.innerHTML = html;
+
+  // Add click handlers
+  fixturesListEl.querySelectorAll('.fixture-item').forEach(item => {
+    item.addEventListener('click', () => {
+      const fixtureId = item.getAttribute('data-fixture-id');
+      navigateTo(`https://ladder.cycleracing.club/rider/fixture/${fixtureId}`);
+    });
+  });
+}
+
+// Load and display fixtures for the current page
+async function loadFixtures() {
+  const teamName = await getSavedTeamName();
+
+  if (!teamName) {
+    fixturesPreviewEl.classList.remove('hidden');
+    fixturesListEl.innerHTML = '<p class="no-fixtures">Set your team name in <a href="#" id="settings-link">Settings</a> to see your fixtures.</p>';
+    document.getElementById('settings-link')?.addEventListener('click', (e) => {
+      e.preventDefault();
+      window.location.href = 'settings.html';
+    });
+    return;
+  }
+
+  const tab = await getCurrentTab();
+
+  try {
+    const response = await chrome.tabs.sendMessage(tab.id, { action: 'extractFixtures' });
+
+    if (response.error) {
+      return; // Silently fail if no fixtures found
+    }
+
+    const matchingFixtures = filterFixtures(response.fixtures, teamName);
+
+    if (matchingFixtures.length > 0) {
+      fixturesPreviewEl.classList.remove('hidden');
+      renderFixtures(matchingFixtures);
+    }
+  } catch (error) {
+    console.error('Error loading fixtures:', error);
+  }
+}
+
 // Detect page type from URL
 function detectPageType(url) {
   if (!url) return null;
@@ -37,6 +123,7 @@ function detectPageType(url) {
     { pattern: /\/rider\/team\/n\/\d+/, type: 'TEAM', description: 'Team Page' },
     { pattern: /\/rider\/profile\/n\/\d+/, type: 'RIDER', description: 'Rider Profile' },
     { pattern: /\/rider\/profile\//, type: 'RIDER', description: 'Rider Profile' },
+    { pattern: /\/rider\/fixture\/\d+/, type: 'FIXTURE', description: 'Fixture' },
     { pattern: /\/rider\/fixtures\//, type: 'FIXTURES', description: 'Fixtures' },
     { pattern: /\/division\//, type: 'DIVISION', description: 'Division' },
     { pattern: /\/events?\//, type: 'EVENT', description: 'Event' },
@@ -70,10 +157,22 @@ function showPageType(url) {
 document.addEventListener('DOMContentLoaded', async () => {
   const tab = await getCurrentTab();
   if (tab && tab.url && tab.url.includes('ladder.cycleracing.club')) {
+    const pageInfo = detectPageType(tab.url);
     showPageType(tab.url);
-    setStatus('Ready to capture data from this page.', 'info');
+
+    // Show context-aware status and enable/disable features
+    if (pageInfo && pageInfo.type === 'TEAM') {
+      setStatus('Ready to capture team data.', 'info');
+    } else if (pageInfo && pageInfo.type === 'FIXTURES') {
+      loadFixtures();
+      captureBtn.disabled = true;
+      statusEl.classList.add('hidden');
+    } else {
+      captureBtn.disabled = true;
+      statusEl.classList.add('hidden');
+    }
   } else {
-    setStatus('Please navigate to ladder.cycleracing.club to capture data.', 'error');
+    setStatus('Please navigate to ladder.cycleracing.club', 'error');
     captureBtn.disabled = true;
   }
 });

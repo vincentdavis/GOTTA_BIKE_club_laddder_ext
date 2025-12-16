@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GOTTA.BIKE ladder</title>
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <div class="container">
+    <h1>GOTTA.BIKE ladder</h1>
+
+    <div id="page-type" class="page-type hidden"></div>
+
+    <div class="nav-buttons">
+      <button id="nav-fixtures" class="btn btn-nav">Fixtures</button>
+    </div>
+
+    <div id="status" class="status"></div>
+
+    <div id="data-preview" class="data-preview hidden">
+      <h2>Team Data</h2>
+      <div id="team-info"></div>
+    </div>
+
+    <div class="button-group">
+      <button id="capture-btn" class="btn btn-primary">Capture Data</button>
+      <button id="copy-btn" class="btn btn-secondary" disabled>Copy JSON</button>
+      <button id="download-json-btn" class="btn btn-secondary" disabled>Download JSON</button>
+      <button id="download-csv-btn" class="btn btn-secondary" disabled>Download CSV<span class="btn-note">All rider stats</span></button>
+    </div>
+
+    <div id="message" class="message hidden"></div>
+  </div>
+
+  <script src="popup.js"></script>
+</body>
+</html>

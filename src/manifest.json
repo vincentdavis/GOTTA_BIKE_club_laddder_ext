@@ -1,0 +1,39 @@
+{
+  "manifest_version": 3,
+  "name": "GOTTA.BIKE ladder",
+  "version": "1.6.0",
+  "description": "Capture team data from ladder.cycleracing.club for GOTTA.BIKE",
+  "permissions": [
+    "activeTab",
+    "scripting"
+  ],
+  "host_permissions": [
+    "https://ladder.cycleracing.club/*"
+  ],
+  "action": {
+    "default_popup": "popup/popup.html",
+    "default_icon": {
+      "16": "icons/icon16.png",
+      "48": "icons/icon48.png",
+      "128": "icons/icon128.png"
+    }
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "https://ladder.cycleracing.club/*"
+      ],
+      "js": [
+        "content/content.js"
+      ]
+    }
+  ],
+  "icons": {
+    "16": "icons/icon16.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  },
+  "background": {
+    "service_worker": "background/service-worker.js"
+  }
+}

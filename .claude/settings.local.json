@@ -1,0 +1,13 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(tree:*)",
+      "mcp__jetbrains__list_directory_tree",
+      "Bash(chmod:*)",
+      "Bash(npm run build:*)",
+      "Bash(unzip:*)",
+      "Bash(sips:*)",
+      "Bash(ls:*)"
+    ]
+  }
+}

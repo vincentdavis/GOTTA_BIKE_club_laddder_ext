@@ -1,0 +1,21 @@
+{
+  "name": "gotta-bike-ladder",
+  "version": "1.6.0",
+  "description": "GOTTA.BIKE ladder - Chrome extension to capture team data from ladder.cycleracing.club",
+  "private": true,
+  "scripts": {
+    "build": "node scripts/build.js minor",
+    "build:patch": "node scripts/build.js patch",
+    "build:minor": "node scripts/build.js minor",
+    "build:major": "node scripts/build.js major",
+    "clean": "rm -rf build"
+  },
+  "keywords": [
+    "chrome-extension",
+    "zwift",
+    "cycling",
+    "ladder"
+  ],
+  "author": "Vincent Davis",
+  "license": "MIT"
+}

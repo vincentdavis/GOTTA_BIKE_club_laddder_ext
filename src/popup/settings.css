@@ -1,0 +1,48 @@
+/* Settings page specific styles */
+
+.header-spacer {
+  width: 26px;
+}
+
+.settings-form {
+  margin-bottom: 16px;
+}
+
+.form-group {
+  margin-bottom: 16px;
+}
+
+.form-group label {
+  display: block;
+  font-size: 13px;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 6px;
+}
+
+.form-group input[type="text"] {
+  width: 100%;
+  padding: 8px 12px;
+  font-size: 14px;
+  border: 1px solid #ced4da;
+  border-radius: 6px;
+  background: #fff;
+  color: #333;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.form-group input[type="text"]:focus {
+  outline: none;
+  border-color: #0066cc;
+  box-shadow: 0 0 0 3px rgba(0, 102, 204, 0.15);
+}
+
+.form-group input[type="text"]::placeholder {
+  color: #adb5bd;
+}
+
+.form-help {
+  font-size: 11px;
+  color: #6c757d;
+  margin-top: 4px;
+}

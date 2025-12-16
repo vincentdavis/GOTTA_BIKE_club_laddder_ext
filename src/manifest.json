@@ -5,7 +5,8 @@
   "description": "Capture team data from ladder.cycleracing.club for GOTTA.BIKE",
   "permissions": [
     "activeTab",
-    "scripting"
+    "scripting",
+    "storage"
   ],
   "host_permissions": [
     "https://ladder.cycleracing.club/*"

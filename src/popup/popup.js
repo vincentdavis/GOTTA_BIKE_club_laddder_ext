@@ -15,6 +15,7 @@ const downloadJsonBtn = document.getElementById('download-json-btn');
 const downloadCsvBtn = document.getElementById('download-csv-btn');
 const messageEl = document.getElementById('message');
 const navFixturesBtn = document.getElementById('nav-fixtures');
+const settingsBtn = document.getElementById('settings-btn');
 
 // Navigation URLs
 const NAV_URLS = {
@@ -289,4 +290,9 @@ downloadCsvBtn.addEventListener('click', () => {
 // Navigation buttons
 navFixturesBtn.addEventListener('click', () => {
   navigateTo(NAV_URLS.fixtures);
+});
+
+// Settings button
+settingsBtn.addEventListener('click', () => {
+  window.location.href = 'settings.html';
 });

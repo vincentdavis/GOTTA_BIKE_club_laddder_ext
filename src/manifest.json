@@ -1,12 +1,13 @@
 {
   "manifest_version": 3,
   "name": "GOTTA.BIKE ladder",
-  "version": "1.6.0",
+  "version": "1.7.0",
   "description": "Capture team data from ladder.cycleracing.club for GOTTA.BIKE",
   "permissions": [
     "activeTab",
     "scripting",
-    "storage"
+    "storage",
+    "tabs"
   ],
   "host_permissions": [
     "https://ladder.cycleracing.club/*"

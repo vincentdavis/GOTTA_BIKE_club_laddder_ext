@@ -18,6 +18,8 @@ const navFixturesBtn = document.getElementById('nav-fixtures');
 const settingsBtn = document.getElementById('settings-btn');
 const fixturesPreviewEl = document.getElementById('fixtures-preview');
 const fixturesListEl = document.getElementById('fixtures-list');
+const fixtureTeamsEl = document.getElementById('fixture-teams');
+const fixtureTeamsListEl = document.getElementById('fixture-teams-list');
 
 // Navigation URLs
 const NAV_URLS = {
@@ -115,6 +117,91 @@ async function loadFixtures() {
   }
 }
 
+// Render fixture teams with get data links
+function renderFixtureTeams(teams) {
+  let html = '';
+  teams.forEach(team => {
+    html += `
+      <div class="fixture-team-item">
+        <span class="fixture-team-name">${team.name}</span>
+        <button class="btn btn-sm btn-team-data" data-team-url="${team.url}" data-team-name="${team.name}">
+          View
+        </button>
+      </div>
+    `;
+  });
+
+  fixtureTeamsListEl.innerHTML = html;
+
+  // Add click handlers for get data buttons
+  fixtureTeamsListEl.querySelectorAll('.btn-team-data').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      const teamUrl = btn.getAttribute('data-team-url');
+      const teamName = btn.getAttribute('data-team-name');
+      await fetchAndDownloadTeamData(teamUrl, teamName);
+    });
+  });
+}
+
+// Fetch team data by navigating to team page and extracting data
+async function fetchAndDownloadTeamData(teamUrl, teamName) {
+  const tab = await getCurrentTab();
+
+  // Navigate to team page
+  await chrome.tabs.update(tab.id, { url: teamUrl });
+
+  // Wait for page to load and then extract data
+  showMessage('Navigating to team page...', 'info');
+
+  // Listen for page load completion
+  const listener = async (tabId, changeInfo) => {
+    if (tabId === tab.id && changeInfo.status === 'complete') {
+      chrome.tabs.onUpdated.removeListener(listener);
+
+      // Small delay to ensure content script is ready
+      setTimeout(async () => {
+        try {
+          const response = await chrome.tabs.sendMessage(tab.id, { action: 'extractData' });
+
+          if (response.error) {
+            showMessage('Failed to extract team data.', 'error');
+          } else {
+            // Download the JSON
+            const filename = `ladder-team-${teamName || 'data'}-${Date.now()}.json`;
+            downloadFile(JSON.stringify(response, null, 2), filename, 'application/json');
+            showMessage(`Downloaded ${teamName} data!`, 'success');
+          }
+        } catch (error) {
+          showMessage('Error extracting data. Try refreshing.', 'error');
+          console.error('Extract error:', error);
+        }
+      }, 500);
+    }
+  };
+
+  chrome.tabs.onUpdated.addListener(listener);
+}
+
+// Load and display teams for a fixture page
+async function loadFixtureTeams() {
+  const tab = await getCurrentTab();
+
+  try {
+    const response = await chrome.tabs.sendMessage(tab.id, { action: 'extractFixtureTeams' });
+
+    if (response.error) {
+      return;
+    }
+
+    if (response.teams && response.teams.length > 0) {
+      fixtureTeamsEl.classList.remove('hidden');
+      renderFixtureTeams(response.teams);
+    }
+  } catch (error) {
+    console.error('Error loading fixture teams:', error);
+  }
+}
+
 // Detect page type from URL
 function detectPageType(url) {
   if (!url) return null;
@@ -167,12 +254,30 @@ document.addEventListener('DOMContentLoaded', async () => {
       loadFixtures();
       captureBtn.disabled = true;
       statusEl.classList.add('hidden');
+    } else if (pageInfo && pageInfo.type === 'FIXTURE') {
+      loadFixtureTeams();
+      captureBtn.disabled = true;
+      statusEl.classList.add('hidden');
     } else {
       captureBtn.disabled = true;
       statusEl.classList.add('hidden');
     }
   } else {
-    setStatus('Please navigate to ladder.cycleracing.club', 'error');
+    statusEl.innerHTML = `
+      Please navigate to ladder.cycleracing.club
+      <a href="#" id="open-ladder-link" class="open-link" title="Open Fixtures">
+        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
+          <polyline points="15 3 21 3 21 9"></polyline>
+          <line x1="10" y1="14" x2="21" y2="3"></line>
+        </svg>
+      </a>
+    `;
+    statusEl.className = 'status error';
+    document.getElementById('open-ladder-link')?.addEventListener('click', (e) => {
+      e.preventDefault();
+      chrome.tabs.create({ url: NAV_URLS.fixtures });
+    });
     captureBtn.disabled = true;
   }
 });

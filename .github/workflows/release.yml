@@ -1,0 +1,103 @@
+name: Build and Release
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'src/**'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build-release:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Calculate version
+        id: version
+        run: |
+          # Get today's date in year.month.day format
+          DATE_VERSION=$(date +'%Y.%-m.%-d')
+
+          # Get all existing tags for today
+          EXISTING_TAGS=$(git tag -l "${DATE_VERSION}.*" 2>/dev/null | sort -V)
+
+          if [ -z "$EXISTING_TAGS" ]; then
+            # No tags for today, start with count 1
+            COUNT=1
+          else
+            # Get the highest count for today
+            LAST_TAG=$(echo "$EXISTING_TAGS" | tail -n 1)
+            LAST_COUNT=$(echo "$LAST_TAG" | awk -F. '{print $NF}')
+            COUNT=$((LAST_COUNT + 1))
+          fi
+
+          VERSION="${DATE_VERSION}.${COUNT}"
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "Calculated version: $VERSION"
+
+      - name: Update manifest version
+        run: |
+          VERSION="${{ steps.version.outputs.version }}"
+          # Update version in manifest.json
+          sed -i "s/\"version\": \"[^\"]*\"/\"version\": \"$VERSION\"/" src/manifest.json
+          cat src/manifest.json | grep version
+
+      - name: Build extension
+        run: |
+          VERSION="${{ steps.version.outputs.version }}"
+          ZIP_NAME="GOTTA_BIKE_ladder_${VERSION}.zip"
+
+          mkdir -p build
+          mkdir -p build/GOTTA_BIKE_ladder
+
+          # Copy source files
+          cp -r src/* build/GOTTA_BIKE_ladder/
+
+          # Remove any .DS_Store files
+          find build -name '.DS_Store' -delete
+
+          # Create zip
+          cd build
+          zip -r "$ZIP_NAME" GOTTA_BIKE_ladder/
+
+          echo "zip_name=$ZIP_NAME" >> $GITHUB_ENV
+          echo "Built: $ZIP_NAME"
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: ${{ steps.version.outputs.version }}
+          name: Release ${{ steps.version.outputs.version }}
+          body: |
+            ## GOTTA.BIKE Ladder Chrome Extension
+
+            **Version:** ${{ steps.version.outputs.version }}
+
+            ### Installation
+            1. Download `${{ env.zip_name }}`
+            2. Unzip the file
+            3. Open Chrome and go to `chrome://extensions/`
+            4. Enable "Developer mode"
+            5. Click "Load unpacked" and select the `GOTTA_BIKE_ladder` folder
+
+            ### Changes
+            See commit history for details.
+          files: build/${{ env.zip_name }}
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

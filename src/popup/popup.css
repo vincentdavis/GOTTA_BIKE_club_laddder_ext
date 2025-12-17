@@ -156,6 +156,20 @@ h2 {
   border: 1px solid #bee5eb;
 }
 
+.open-link {
+  display: inline-flex;
+  align-items: center;
+  margin-left: 6px;
+  color: inherit;
+  vertical-align: middle;
+  opacity: 0.7;
+  transition: opacity 0.2s;
+}
+
+.open-link:hover {
+  opacity: 1;
+}
+
 .data-preview {
   background: #fff;
   border: 1px solid #ddd;
@@ -230,6 +244,61 @@ h2 {
 
 .no-fixtures a:hover {
   text-decoration: underline;
+}
+
+.fixture-teams {
+  background: #fff;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  padding: 12px;
+  margin-bottom: 12px;
+}
+
+.fixture-teams.hidden {
+  display: none;
+}
+
+.fixture-team-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 10px;
+  margin-bottom: 6px;
+  background: #f8f9fa;
+  border-radius: 6px;
+}
+
+.fixture-team-item:last-child {
+  margin-bottom: 0;
+}
+
+.fixture-team-name {
+  font-size: 13px;
+  font-weight: 500;
+  color: #333;
+}
+
+.btn-sm {
+  padding: 4px 10px;
+  font-size: 11px;
+}
+
+.btn-team-data {
+  background: #0066cc;
+  color: #fff;
+  flex: 0 0 auto !important;
+  width: auto !important;
+  min-width: 0;
+  padding: 4px 8px;
+}
+
+.btn-team-data:hover {
+  background: #0052a3;
+}
+
+.message.info {
+  background: #d1ecf1;
+  color: #0c5460;
 }
 
 #team-info {

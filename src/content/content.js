@@ -209,6 +209,38 @@ function extractFixtures() {
   };
 }
 
+/**
+ * Extract team info from a single fixture page
+ */
+function extractFixtureTeams() {
+  const teamElements = document.querySelectorAll('.teamRiderOpener[data-id]');
+
+  if (teamElements.length < 2) {
+    return {
+      error: true,
+      message: 'Could not find teams on this fixture page.'
+    };
+  }
+
+  const teams = [];
+  teamElements.forEach(el => {
+    const teamId = el.getAttribute('data-id');
+    const teamName = el.textContent.trim();
+    if (teamId && teamName) {
+      teams.push({
+        id: teamId,
+        name: teamName,
+        url: `https://ladder.cycleracing.club/rider/team/n/${teamId}`
+      });
+    }
+  });
+
+  return {
+    error: false,
+    teams: teams.slice(0, 2) // Only first two teams
+  };
+}
+
 // Listen for messages from popup
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   if (request.action === 'extractData') {
@@ -216,6 +248,9 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     sendResponse(data);
   } else if (request.action === 'extractFixtures') {
     const data = extractFixtures();
+    sendResponse(data);
+  } else if (request.action === 'extractFixtureTeams') {
+    const data = extractFixtureTeams();
     sendResponse(data);
   }
   return true;

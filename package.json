@@ -1,6 +1,6 @@
 {
   "name": "gotta-bike-ladder",
-  "version": "1.6.0",
+  "version": "1.7.0",
   "description": "GOTTA.BIKE ladder - Chrome extension to capture team data from ladder.cycleracing.club",
   "private": true,
   "scripts": {

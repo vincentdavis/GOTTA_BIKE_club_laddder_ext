@@ -18,7 +18,7 @@ While useful on its own, this is designed to be used in connection with the GOIT
 
 ### From Release
 
-1. Download the latest release zip from [Releases](https://github.com/vincentdavis/GOTTA_BIKE_club_laddder_ext)
+1. Download the latest release zip from [Releases](https://github.com/vincentdavis/GOTTA_BIKE_club_laddder_ext/releases)
 2. Unzip the file
 3. Open Chrome and go to `chrome://extensions/`
 4. Enable "Developer mode" (toggle in top right)
